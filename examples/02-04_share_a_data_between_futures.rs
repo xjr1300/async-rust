@@ -65,7 +65,6 @@ impl Future for CounterFuture {
             CounterType::Decrement => {
                 value.decrement();
                 println!("after decrement: {}", value.counter);
-                std::thread::sleep(Duration::from_millis(10));
             }
         }
 
@@ -83,18 +82,18 @@ impl Future for CounterFuture {
 
 #[tokio::main]
 async fn main() {
-    let shared_data = Arc::new(Mutex::new(SharedData::default()));
-    let counter_one = CounterFuture {
+    let shared_data2 = Arc::new(Mutex::new(SharedData::default()));
+    let counter1 = CounterFuture {
         counter_type: CounterType::Increment,
-        data_reference: Arc::clone(&shared_data),
+        data_reference: Arc::clone(&shared_data2),
         count: 0,
     };
-    let counter_two = CounterFuture {
+    let counter2 = CounterFuture {
         counter_type: CounterType::Decrement,
-        data_reference: Arc::clone(&shared_data),
+        data_reference: shared_data2,
         count: 0,
     };
-    let handle_one = tokio::task::spawn(counter_one);
-    let handle_two = tokio::task::spawn(counter_two);
-    let _ = tokio::join!(handle_one, handle_two);
+    let handle1 = tokio::task::spawn(counter1);
+    let handle2 = tokio::task::spawn(counter2);
+    let _ = tokio::join!(handle1, handle2);
 }
