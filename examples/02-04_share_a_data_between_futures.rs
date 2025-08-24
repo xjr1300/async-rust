@@ -50,6 +50,8 @@ impl Future for CounterFuture {
             Ok(guard) => guard,
             Err(e) => {
                 println!("error for {:?}: {e}", self.counter_type);
+                // ロックを取得できなかったため、ウェイカーを介して、エグゼキューターが
+                // タスク（poll呼び出し）をスケジュール
                 cx.waker().wake_by_ref();
                 return Poll::Pending;
             }
