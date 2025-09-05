@@ -16,11 +16,14 @@ where
     F: Future<Output = T> + Send + 'static,
     T: Send + 'static,
 {
+    // 優先度が高いタスクキュー
     static HIGH_CHANNEL: LazyLock<(Sender<Runnable>, Receiver<Runnable>)> =
         LazyLock::new(flume::unbounded::<Runnable>);
+    // 優先度が低いタスクキュー
     static LOW_CHANNEL: LazyLock<(Sender<Runnable>, Receiver<Runnable>)> =
         LazyLock::new(flume::unbounded::<Runnable>);
 
+    // 優先度が高いキューを優先的に処理するスレッドを2つ起動し、HIGH_CHANNELへのSenderを返す
     static HIGH_QUEUE: LazyLock<flume::Sender<Runnable>> = LazyLock::new(|| {
         let high_num = std::env::var("HIGH_NUM").unwrap().parse::<usize>().unwrap();
         for _ in 0..high_num {
@@ -47,6 +50,7 @@ where
         HIGH_CHANNEL.0.clone()
     });
 
+    // 優先度が低いキューを処理するスレッドを起動し、LOW_CHANNELのSenderを返す
     static LOW_QUEUE: LazyLock<flume::Sender<Runnable>> = LazyLock::new(|| {
         let low_num = std::env::var("LOW_NUM").unwrap().parse::<usize>().unwrap();
         for _ in 0..low_num {
@@ -73,14 +77,22 @@ where
         LOW_CHANNEL.0.clone()
     });
 
+    // 優先度が高いキューにタスクを送信するクロージャー
     let schedule_high = |runnable| HIGH_QUEUE.send(runnable).unwrap();
+    // 優先度が低いキューにタスクを送信するクロージャー
     let schedule_low = |runnable| LOW_QUEUE.send(runnable).unwrap();
+
+    // 引数で渡された優先度によってスケジューラを切り替える
     let schedule = match order {
         FutureType::High => schedule_high,
         FutureType::Low => schedule_low,
     };
+
+    // タスクを生成
     let (runnable, task) = async_task::spawn(future, schedule);
+    // タスクをスケジューリング（エグゼキューターのキューに投入）
     runnable.schedule();
+    // block_onで待ち合わせ可能なタスクハンドルを返す
     task
 }
 
