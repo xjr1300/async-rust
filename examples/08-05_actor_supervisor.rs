@@ -31,6 +31,7 @@ struct DeleteKeyValueMessage {
 enum KeyValueMessage {
     Get(GetKeyValueMessage),
     Set(SetKeyValueMessage),
+    #[allow(dead_code)]
     Delete(DeleteKeyValueMessage),
 }
 
@@ -286,6 +287,7 @@ async fn set(key: String, value: Vec<u8>) -> Result<(), std::io::Error> {
     Ok(())
 }
 
+#[allow(dead_code)]
 async fn delete(key: String) -> Result<(), std::io::Error> {
     let (tx, rx) = oneshot::channel();
     ROUTER_SENDER
