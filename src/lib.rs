@@ -1,3 +1,4 @@
+pub mod async_mod;
 pub mod futures;
 pub mod runtime;
 
