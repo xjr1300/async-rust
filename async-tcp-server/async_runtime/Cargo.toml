@@ -1,0 +1,21 @@
+[package]
+name = "async_runtime"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-std = "1.13.2"
+tokio = { version = "1.47.1", features = ["sync"] }
+waker-fn = "1.2.0"
+
+[[bin]]
+name = "book"
+path = "src/book/main.rs"
+
+[[bin]]
+name = "with_waker"
+path = "src/with_waker/main.rs"
+
+[[bin]]
+name = "with_handle"
+path = "src/with_handle/main.rs"

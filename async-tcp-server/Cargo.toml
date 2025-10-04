@@ -1,0 +1,6 @@
+[workspace]
+members = ["client", "server", "data_layer", "async_runtime"]
+resolver = "3"
+
+[profile.release]
+opt-level = 'z'
